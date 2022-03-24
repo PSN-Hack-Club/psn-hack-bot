@@ -141,14 +141,10 @@ export class Bot {
         )
 
         this.client.on('guildMemberAdd', async (member: GuildMember) => {
-            console.log('new member!')
             if (member.guild.id != process.env.SERVER_ID) return
 
-            console.log('member joined the right guild')
             const newInvites = await member.guild.invites.fetch()
             if (!newInvites) return
-
-            console.log('new invites found')
 
             const invite = newInvites.find(
                 (i) => <number>i.uses > this.invites.get(i.code)
