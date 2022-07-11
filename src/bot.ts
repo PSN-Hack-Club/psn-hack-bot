@@ -6,6 +6,7 @@ import {
     GuildMember,
     MessageEmbed,
     PartialMessage,
+    PartialGuildMember,
 } from 'discord.js'
 import { inject, injectable } from 'inversify'
 import { TYPES } from './types'
@@ -186,6 +187,35 @@ export class Bot {
                 embeds: [embed],
             })
         })
+
+        this.client.on(
+            'guildMemberRemove',
+            async (member: GuildMember | PartialGuildMember) => {
+                if (member.guild.id != process.env.SERVER_ID) return
+
+                console.log(`${member} joined left`)
+                try {
+                    // fetch from mongo db
+                    await InviteModel.deleteOne({
+                        discordId: member.id,
+                    })
+                } catch {}
+
+                const embed = new MessageEmbed()
+                    .setTitle("We're sorry to see you go")
+                    .setDescription(
+                        `Thanks for joining the club. We hope you had a good time! If you'd like to join back, feel free to join via the [website](https://psn.hackclub.com)!`
+                    )
+
+                try {
+                    await member.send({ embeds: [embed] })
+                } catch {
+                    console.log(`${member} has their DMs off.`)
+                }
+
+                // send email here later
+            }
+        )
 
         return this.client.login(this.token)
     }
